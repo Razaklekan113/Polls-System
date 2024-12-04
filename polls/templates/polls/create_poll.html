@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Poll</title>
+</head>
+<body>
+    <h1>Create a New Poll</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ poll_form.as_p }}
+        <h3>Choices</h3>
+        {{ formset.management_form }}
+        <table>
+            {% for form in formset %}
+            <tr>
+                <td>{{ form.choice_text.label }}</td>
+                <td>{{ form.choice_text }}</td>
+                <td>{% if form.instance.pk %}<input type="checkbox" name="{{ form.DELETE.name }}" id="{{ form.DELETE.id }}">{{ form.DELETE.label }},{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit">Create Poll</button>
+    </form>
+    <a href="{% url 'polls:index' %}">Back to Polls</a>
+</body>
+</html>

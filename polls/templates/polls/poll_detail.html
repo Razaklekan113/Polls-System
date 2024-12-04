@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ poll.question }}</title>
+</head>
+<body>
+    <h1>{{ poll.question }}</h1>
+    <form method="post" action="{% url 'polls:vote' poll.id %}">
+        {% csrf_token %}
+        {% for choice in poll.choices.all %}
+        <input type="radio" name="choice" id="choice{{ choice.id }}" value="{{ choice.id }}">
+        <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+        {% endfor %}
+        <button type="submit">Vote</button>
+    </form>
+    {% if error_message %}
+    <p style="color:red;">{{ error_message }}</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Poll</title>
+</head>
+<body>
+    <h1>Edit Poll</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Changes</button>
+    </form>
+    <a href="{% url 'polls:index' %}">Back to Polls</a>
+</body>
+</html>
