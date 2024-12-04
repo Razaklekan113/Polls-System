@@ -2,25 +2,74 @@
 <html>
 <head>
     <title>Create Poll</title>
+    <style>
+        .choice-field {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script>
+        // Function to add a new choice
+        function addChoice() {
+            const choicesContainer = document.getElementById('choices-container');
+            const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+            const currentIndex = parseInt(totalForms.value);
+
+            // Create a new choice input
+            const newChoice = document.createElement('div');
+            newChoice.className = 'choice-field';
+            newChoice.id = `choice-${currentIndex}`;
+            newChoice.innerHTML = `
+                <label for="id_form-${currentIndex}-choice_text">Choice:</label>
+                <input type="text" name="form-${currentIndex}-choice_text" id="id_form-${currentIndex}-choice_text">
+                <button type="button" onclick="removeChoice('${currentIndex}')">Remove</button>
+            `;
+
+            // Append the new choice to the container
+            choicesContainer.appendChild(newChoice);
+
+            // Update the management form total
+            totalForms.value = currentIndex + 1;
+        }
+
+        // Function to remove a choice
+        function removeChoice(index) {
+            const choiceField = document.getElementById(`choice-${index}`);
+            if (choiceField) {
+                choiceField.remove();
+
+                // Update the management form total
+                const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+                totalForms.value = parseInt(totalForms.value) - 1;
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Create a New Poll</h1>
+
     <form method="post">
         {% csrf_token %}
         {{ poll_form.as_p }}
         <h3>Choices</h3>
-        {{ formset.management_form }}
-        <table>
+
+        <!-- Container for dynamic choice fields -->
+        <div id="choices-container">
+            {{ formset.management_form }}
             {% for form in formset %}
-            <tr>
-                <td>{{ form.choice_text.label }}</td>
-                <td>{{ form.choice_text }}</td>
-                <td>{% if form.instance.pk %}<input type="checkbox" name="{{ form.DELETE.name }}" id="{{ form.DELETE.id }}">{{ form.DELETE.label }},{% endif %}</td>
-            </tr>
+                <div class="choice-field" id="choice-{{ forloop.counter0 }}">
+                    <label for="id_form-{{ forloop.counter0 }}-choice_text">Choice:</label>
+                    <input type="text" name="form-{{ forloop.counter0 }}-choice_text" id="id_form-{{ forloop.counter0 }}-choice_text" value="{{ form.choice_text.value }}">
+                    <button type="button" onclick="removeChoice('{{ forloop.counter0 }}')">Remove</button>
+                </div>
             {% endfor %}
-        </table>
+        </div>
+
+        <!-- Button to add a new choice -->
+        <button type="button" onclick="addChoice()">Add Choice</button>
+
         <button type="submit">Create Poll</button>
     </form>
+
     <a href="{% url 'polls:index' %}">Back to Polls</a>
 </body>
 </html>
