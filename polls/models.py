@@ -7,6 +7,7 @@ class Poll(models.Model):
     def __str__(self):
         return self.question
 
+
 class Choice(models.Model):
     poll = models.ForeignKey(Poll, related_name='choices', on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=255)
@@ -14,3 +15,4 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.choice_text
+

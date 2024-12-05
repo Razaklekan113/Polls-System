@@ -5,24 +5,29 @@
 </head>
 <body>
     <h1>Polls</h1>
-    
-    <!-- Button to Create a New Poll -->
-    <a href="{% url 'polls:create_poll' %}">Create Poll</a>
 
-    <ul>
-        {% for poll in polls %}
-        <li>
-            <a href="{% url 'polls:poll_detail' poll.id %}">{{ poll.question }}</a> |
-            <!-- Edit button: Links to the edit page for each poll -->
-            <a href="{% url 'polls:edit_poll' poll.id %}">Edit</a> | 
-            <!-- Delete button: Links to the delete confirmation page for each poll -->
-            <a href="{% url 'polls:delete_poll' poll.id %}">Delete</a> |
-            <!-- Result button: Links to the result page for each poll -->
-            <a href="{% url 'polls:poll_results' poll.id %}">Results</a>
-        </li>
-        {% endfor %}
-    </ul>
-
+    {% if user.is_authenticated %}
+        <!-- Show logged-in user's name and logout option -->
+        <p>Welcome, {{ user.username }}!</p>
+        <form method="post" action="{% url 'polls:logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+        <a href="{% url 'polls:create_poll' %}">Create Poll</a>
+        <ul>
+            {% for poll in polls %}
+            <li>
+                <a href="{% url 'polls:poll_detail' poll.id %}">{{ poll.question }}</a> |
+                <a href="{% url 'polls:edit_poll' poll.id %}">Edit</a> |
+                <a href="{% url 'polls:delete_poll' poll.id %}">Delete</a> |
+                <a href="{% url 'polls:results' poll.id %}">Results</a>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You must be logged in to view and create polls.</p>
+        <a href="{% url 'polls:login' %}">Login</a> |
+        <a href="{% url 'polls:register' %}">Register</a>
+    {% endif %}
 </body>
 </html>
-
