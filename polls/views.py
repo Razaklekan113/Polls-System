@@ -14,21 +14,22 @@ from django.contrib.auth import logout
 def logout_view(request):
     logout(request)
     return redirect('polls:login')
+
 @login_required
 def index(request):
-    polls = Poll.objects.all()
+    polls = Poll.objects.filter(created_by=request.user) 
     return render(request, 'polls/index.html', {'polls': polls})
 
-# Detailed view of a poll
+
 @login_required
 def poll_detail(request, poll_id):
-    poll = get_object_or_404(Poll, id=poll_id)
+    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user)  
     return render(request, 'polls/poll_detail.html', {'poll': poll})
 
-# Voting in a poll
+
 @login_required
 def vote(request, poll_id):
-    poll = get_object_or_404(Poll, id=poll_id)
+    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user) 
     try:
         selected_choice = poll.choices.get(id=request.POST['choice'])
         selected_choice.votes += 1
@@ -40,10 +41,10 @@ def vote(request, poll_id):
         })
     return redirect('polls:results', poll_id=poll.id)
 
-# Create a new poll (with choices)
+
 @login_required
 def create_poll(request):
-    num_choices = request.GET.get('num_choices', 2)  # Default to 2 choices
+    num_choices = request.GET.get('num_choices', 2)  
     try:
         num_choices = int(num_choices)
     except ValueError:
@@ -59,7 +60,9 @@ def create_poll(request):
         poll_form = PollForm(request.POST)
         formset = DynamicChoiceFormSet(request.POST)
         if poll_form.is_valid() and formset.is_valid():
-            poll = poll_form.save()
+            poll = poll_form.save(commit=False)
+            poll.created_by = request.user  
+            poll.save()
             for form in formset:
                 if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
                     choice = form.save(commit=False)
@@ -76,11 +79,10 @@ def create_poll(request):
         'num_choices': num_choices,
     })
 
-# Edit poll
+
 @login_required
 def edit_poll(request, poll_id):
-    poll = get_object_or_404(Poll, id=poll_id)
-    
+    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user) 
     if request.method == 'POST':
         poll_form = PollForm(request.POST, instance=poll)
         formset = ChoiceFormSet(request.POST, instance=poll)
@@ -95,19 +97,19 @@ def edit_poll(request, poll_id):
     
     return render(request, 'polls/edit_poll.html', {'poll_form': poll_form, 'formset': formset})
 
-# Delete a poll
+
 @login_required
 def delete_poll(request, poll_id):
-    poll = get_object_or_404(Poll, id=poll_id)
+    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user)  
     if request.method == 'POST':
         poll.delete()
         return redirect('polls:index')
     return render(request, 'polls/delete_poll.html', {'poll': poll})
 
-# Poll results view
+
 @login_required
 def poll_results(request, poll_id):
-    poll = get_object_or_404(Poll, id=poll_id)
+    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user)  
     return render(request, 'polls/results.html', {'poll': poll})
 
 def login_view(request):
@@ -116,8 +118,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('polls:index')  # Redirect to your desired page after login
-    else:
+            return redirect('polls:index')  
         form = AuthenticationForm()
     return render(request, 'polls/login.html', {'form': form})
 
@@ -126,7 +127,7 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('polls:login')  # Redirect to login after successful registration
+            return redirect('polls:login') 
     else:
         form = CustomUserCreationForm()
     return render(request, 'polls/register.html', {'form': form})

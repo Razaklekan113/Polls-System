@@ -4,24 +4,22 @@ from .models import Poll, Choice
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-# PollForm for creating and editing polls
+
 class PollForm(forms.ModelForm):
     class Meta:
         model = Poll
-        fields = ['question']  # Poll question
+        fields = ['question']  
 
 
-# Inline formset for managing choices within a poll
 ChoiceFormSet = inlineformset_factory(
     Poll, 
     Choice, 
     fields=('choice_text',), 
-    extra=2,  # Default to 2 empty choices
+    extra=2, 
     can_delete=True
 )
 
 
-# Custom user creation form
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
